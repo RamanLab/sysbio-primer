@@ -10,6 +10,7 @@ book:
   site-url: https://ramanlab.github.io/sysbio-primer
   repo-url: https://github.com/RamanLab/sysbio-primer
   repo-actions: [issue, source]
+  downloads: [pdf]
   license: "CC BY 4.0"
   chapters:
     - index.qmd
