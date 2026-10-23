@@ -1,0 +1,79 @@
+# Run every example in Python and in MATLAB, then check that the two agree
+# with each other and with the values given in the book.
+name: check
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - run: pip install -r requirements.txt -e .
+      - name: Run the Python examples
+        run: python tools/run_examples.py
+      - name: Check Python results against the book
+        run: python tests/compare.py
+      - name: Bundle outputs
+        run: tar czf out-python.tgz $(find examples -type d -path '*/out/python')
+      - uses: actions/upload-artifact@v4
+        with:
+          name: out-python
+          path: out-python.tgz
+
+  matlab:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: matlab-actions/setup-matlab@v2
+        with:
+          release: R2025b
+          products: Optimization_Toolbox
+          cache: true
+      - name: Get the COBRA Toolbox
+        run: git clone --depth 1 https://github.com/opencobra/cobratoolbox.git "$HOME/cobratoolbox"
+      - name: Run the MATLAB examples
+        uses: matlab-actions/run-command@v2
+        with:
+          command: |
+            primer = pwd;
+            cd(fullfile(getenv('HOME'), 'cobratoolbox'));
+            initCobraToolbox(false);
+            if ~changeCobraSolver('glpk', 'LP', 0)
+                changeCobraSolver('matlab', 'LP');
+            end
+            cd(primer);
+            addpath('tools');
+            run_examples();
+      - name: Bundle outputs
+        if: always()
+        run: tar czf out-matlab.tgz $(find examples -type d -path '*/out/matlab')
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: out-matlab
+          path: out-matlab.tgz
+
+  compare:
+    needs: [python, matlab]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+      - name: Unpack fresh outputs
+        run: |
+          tar xzf out-python/out-python.tgz
+          tar xzf out-matlab/out-matlab.tgz
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install pyyaml
+      - name: MATLAB vs Python vs book
+        run: python tests/compare.py --require-matlab

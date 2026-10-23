@@ -1,0 +1,8 @@
+# Python packages used by the primer's examples (pinned for reproducibility).
+# Install with:  pip install -r requirements.txt && pip install -e .
+numpy==2.5.3
+scipy==1.18.1
+matplotlib==3.11.2
+networkx==3.7
+cobra==0.32.1
+pyyaml==6.0.3

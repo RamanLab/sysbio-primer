@@ -1,0 +1,10 @@
+/_book/
+/.quarto/
+/.venv/
+__pycache__/
+*.egg-info/
+*.asv
+.DS_Store
+/**/*_files/
+
+**/*.quarto_ipynb

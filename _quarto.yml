@@ -1,0 +1,43 @@
+project:
+  type: book
+  output-dir: _book
+
+book:
+  title: "Computational Systems Biology in MATLAB and Python"
+  subtitle: "An open primer"
+  author: "Karthik Raman"
+  date: last-modified
+  site-url: https://ramanlab.github.io/sysbio-primer
+  repo-url: https://github.com/RamanLab/sysbio-primer
+  repo-actions: [issue, source]
+  license: "CC BY 4.0"
+  chapters:
+    - index.qmd
+    - chapters/getting-started.qmd
+    - chapters/constraint-based.qmd
+
+bibliography: references.bib
+
+filters:
+  - include-code-files
+  - tools/missing-output.lua
+  - path: tools/pdf-tabs.lua
+    at: pre-ast
+
+format:
+  html:
+    theme: cosmo
+    css: assets/primer.css
+    code-copy: true
+    code-overflow: scroll
+    toc-depth: 3
+  pdf:
+    documentclass: scrreprt
+    pdf-engine: xelatex
+    papersize: a4
+    toc-depth: 2
+    code-block-font-size: \footnotesize
+    include-in-header:
+      text: |
+        \usepackage{fvextra}
+        \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\}}

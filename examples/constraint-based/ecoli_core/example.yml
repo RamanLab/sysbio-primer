@@ -1,0 +1,14 @@
+title: FBA of the E. coli core model
+book: "Ch. 8, §8.6 and §8.8.6"
+needs:
+  matlab: [COBRA Toolbox]
+  python: [cobra]
+compare: [n_reactions, growth_aerobic, growth_anaerobic, glucose_uptake,
+          growth_vs_glucose_aerobic, growth_vs_glucose_o2_10,
+          growth_vs_glucose_anaerobic]
+# Different LP solvers (HiGHS/GLPK) agree to about 1e-6 on growth rates
+tolerance: {rtol: 1.0e-5, atol: 1.0e-6}
+expected:
+  n_reactions: 95
+  growth_aerobic: 0.8739215
+  growth_anaerobic: 0.2116629

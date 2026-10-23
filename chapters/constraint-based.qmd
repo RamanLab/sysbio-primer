@@ -1,0 +1,164 @@
+# Constraint-based modelling {#sec-cbm}
+
+Kinetic models need rate laws and parameters that are rarely known for more than a handful of reactions. Constraint-based modelling sidesteps this. It asks only for the **stoichiometry** of a metabolic network, and a few **bounds** on the fluxes, and then asks: of all the flux distributions the network can support at steady state, which ones are possible, and which one is best for a given objective, such as growth?
+
+This chapter works through flux balance analysis (FBA) and flux variability analysis (FVA), first on a small toy network that you can check by hand, and then on a real metabolic model of *E. coli*.
+
+::: {.callout-note appearance="simple"}
+## In the book
+Chapter 8, *Introduction to Constraint-Based Modelling*: the stoichiometric matrix (§8.2), steady-state mass balance (§8.3), objective functions (§8.4), FBA as a linear program (§8.5), the worked toy example (§8.6), FVA (§8.7) and practical issues such as multiple optima and ATP maintenance (§8.8).
+:::
+
+## The toy network
+
+We use the small network of the book's Fig. 8.1: eight metabolites, seven internal reactions, two exchange reactions that connect the cell to its surroundings, and a "biomass" reaction that drains the building blocks the cell needs to grow.
+
+| Reaction | Equation | Flux | Bounds |
+|---|---|---|---|
+| R1 | A → ATP + B | $v_1$ | [0, 1000] |
+| R2 | A → C | $v_2$ | [0, 1000] |
+| R3 | C → ATP + B | $v_3$ | [0, 1000] |
+| R4 | B $\rightleftharpoons$ 2 D | $v_4$ | [−1000, 1000] |
+| R5 | B → F | $v_5$ | [0, 1000] |
+| R6 | D $\rightleftharpoons$ E | $v_6$ | [−1000, 1000] |
+| R7 | D + ATP → G | $v_7$ | [0, 1000] |
+| E1 | → A | $b_1$ | [0, 1000] |
+| E2 | E $\rightleftharpoons$ | $b_2$ | [−1000, 1000] |
+| Biomass | F + 2 G + 10 ATP → | $v_\text{bio}$ | [0, 1000] |
+
+: The toy network. Fluxes are in mmol/gDW/h. {#tbl-toy}
+
+Each reaction becomes a column of the **stoichiometric matrix** $\mathbf{S}$, with one row per metabolite: negative entries for what a reaction consumes and positive entries for what it produces. At steady state, every metabolite is produced exactly as fast as it is consumed, so any feasible flux vector $\mathbf{v}$ satisfies
+
+$$
+\mathbf{S}\mathbf{v} = \mathbf{0}.
+$$
+
+With eight equations and ten unknowns, this system has infinitely many solutions. FBA picks one by optimising an objective, here the biomass flux.
+
+## Flux balance analysis
+
+FBA is a **linear program** (LP):
+
+$$
+\max_{\mathbf{v}}\ \mathbf{c}^\top\mathbf{v}
+\quad\text{subject to}\quad
+\mathbf{S}\mathbf{v} = \mathbf{0},\qquad
+\mathbf{v}_\text{lb} \le \mathbf{v} \le \mathbf{v}_\text{ub},
+$$
+
+where $\mathbf{c}$ picks out the objective; it has a 1 in the position of $v_\text{bio}$ and zeros elsewhere. Any LP solver will do. Both `linprog` functions minimise, so we minimise $-\mathbf{c}^\top\mathbf{v}$ instead.
+
+::: {.panel-tabset group="language"}
+## MATLAB
+
+*Needs the Optimization Toolbox (for `linprog`).*
+
+```{.matlab include="/examples/constraint-based/toy_fba/toy_fba.m"}
+```
+
+![](/examples/constraint-based/toy_fba/out/matlab/fig-toy-fba.png){width=75%}
+
+## Python
+
+*Needs SciPy (for `linprog`).*
+
+```{.python include="/examples/constraint-based/toy_fba/toy_fba.py"}
+```
+
+![](/examples/constraint-based/toy_fba/out/python/fig-toy-fba.png){width=75%}
+:::
+
+The maximum biomass flux is $v_\text{bio} = 50$, the same as in the book (Eq. 8.8). What limits it? Follow the stoichiometry: every unit of biomass needs 2 G, and so 2 units of flux through R7, and 10 ATP. Balancing ATP, B and D in turn shows that $v_4 = 11\,v_\text{bio}$ and $v_6 = 20\,v_\text{bio}$, so the upper bound of 1000 on $v_6$ (and on $b_2$, which must equal $v_6$) caps growth at 50.
+
+::: {.callout-note}
+## The optimal growth rate is unique; the flux distribution is not
+R1 and the route R2 → R3 both turn A into ATP + B, so the cell can split the 600 units of A between them in any proportion and grow equally well. The book shows two such solutions (Eqs. 8.8 and 8.9). Which one you get depends on the solver, and the MATLAB and Python versions above may print different values of $v_1$, $v_2$ and $v_3$. Both are correct. This is why our automated checks compare only the growth rate for this example, and why the next section matters.
+:::
+
+## Flux variability analysis
+
+FVA maps out *all* the optimal (or near-optimal) solutions at once. First solve the FBA problem to get the optimal objective $f^*$. Then, for each reaction $j$ in turn, find the smallest and the largest flux it can carry while growth stays at least a fraction $\alpha$ of the optimum:
+
+$$
+\min_{\mathbf{v}} / \max_{\mathbf{v}}\ v_j
+\quad\text{subject to}\quad
+\mathbf{S}\mathbf{v} = \mathbf{0},\quad
+\mathbf{v}_\text{lb} \le \mathbf{v} \le \mathbf{v}_\text{ub},\quad
+\mathbf{c}^\top\mathbf{v} \ge \alpha f^*.
+$$
+
+That is two LPs per reaction. The code below runs FVA at $\alpha = 1$ (exactly optimal growth) and $\alpha = 0.9$.
+
+::: {.panel-tabset group="language"}
+## MATLAB
+
+*Needs the Optimization Toolbox (for `linprog`).*
+
+```{.matlab include="/examples/constraint-based/toy_fva/toy_fva.m"}
+```
+
+![](/examples/constraint-based/toy_fva/out/matlab/fig-toy-fva.png){width=75%}
+
+## Python
+
+*Needs SciPy (for `linprog`).*
+
+```{.python include="/examples/constraint-based/toy_fva/toy_fva.py"}
+```
+
+![](/examples/constraint-based/toy_fva/out/python/fig-toy-fva.png){width=75%}
+:::
+
+At optimal growth, $v_1$, $v_2$ and $v_3$ can each take any value between 0 and 600, while every other flux is fixed. These are exactly the ranges in the book (Eq. 8.12). Relaxing growth to 90% of the optimum widens the other ranges too, because the reactions that limit growth no longer have to run at their maximum.
+
+## A genome-scale example: *E. coli* core
+
+The same ideas carry over unchanged to real networks. The *E. coli* core model [@orth2010] has 95 reactions, 72 metabolites and 137 genes, covering glycolysis, the pentose phosphate pathway, the TCA cycle and oxidative phosphorylation. At this scale we no longer write $\mathbf{S}$ by hand. A standard model file (SBML) is read by a modelling package, COBRApy in Python and the COBRA Toolbox in MATLAB, which builds and solves the LP for us.
+
+Two things to know when reading the code:
+
+* **Exchange reactions** such as `EX_glc__D_e` (glucose) and `EX_o2_e` (oxygen) are written as *secretion*, so **uptake is a negative flux**. Allowing up to 10 mmol/gDW/h of glucose uptake therefore means setting the lower bound to −10.
+* The model includes an **ATP maintenance** reaction, `ATPM`, with a lower bound of 8.39 mmol/gDW/h: ATP the cell must spend just to stay alive, whether it grows or not.
+
+::: {.panel-tabset group="language"}
+## MATLAB
+
+*Needs the [COBRA Toolbox](https://opencobra.github.io/cobratoolbox/); run `initCobraToolbox` once per session before this script.*
+
+```{.matlab include="/examples/constraint-based/ecoli_core/ecoli_core.m"}
+```
+
+![](/examples/constraint-based/ecoli_core/out/matlab/fig-ecoli-glucose.png){width=75%}
+
+## Python
+
+*Needs [COBRApy](https://opencobra.github.io/cobrapy/).*
+
+```{.python include="/examples/constraint-based/ecoli_core/ecoli_core.py"}
+```
+
+![](/examples/constraint-based/ecoli_core/out/python/fig-ecoli-glucose.png){width=75%}
+:::
+
+With glucose uptake capped at 10 mmol/gDW/h, the predicted growth rate is 0.874 h^−1^ with oxygen and 0.212 h^−1^ without it: aerobic respiration extracts far more ATP from each glucose than fermentation does. The growth curves show three more things.
+
+* **At zero glucose the problem is infeasible**, not merely zero growth. With no carbon source, nothing can meet the ATP maintenance demand, so no flux vector satisfies all the constraints. The curves start only once glucose uptake covers maintenance, which takes more glucose without oxygen than with it.
+* **When glucose is the only limit, growth rises in a straight line.** This is a general property of linear programs: scaling the one binding constraint scales the solution.
+* **When oxygen is also limited** (the middle curve), the line bends at the point where oxygen runs out, and beyond it each extra unit of glucose buys less growth. A different constraint has become binding.
+
+## Exercises
+
+1. In the toy network, raise the upper bound of $v_6$ to 2000. Does the optimal growth change? Why not? What happens if you also raise the upper bound of $b_2$?
+2. Remove the reaction R2 from the toy network (set both its bounds to 0) and rerun FVA. What happens to the ranges of $v_1$ and $v_3$, and why?
+3. Run FVA on the *E. coli* core model under aerobic conditions (`flux_variability_analysis` in COBRApy, `fluxVariability` in the COBRA Toolbox). Which reactions can carry no flux at all? (Book, §8.8.1.)
+4. At glucose uptake 10 and oxygen uptake at most 10 mmol/gDW/h, which by-products does the model secrete? Are they unique? Use FVA on the exchange reactions to find out.
+
+## Going further
+
+The next chapter builds on these tools to study how networks respond to perturbations: gene and reaction knock-outs, synthetic lethals and over-expression (book, Chapters 9 and 10).
+
+## References {.unnumbered}
+
+::: {#refs}
+:::

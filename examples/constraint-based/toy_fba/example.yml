@@ -1,0 +1,11 @@
+title: FBA of the toy network
+book: "Ch. 8, §8.6 (Eq. 8.8)"
+needs:
+  matlab: [Optimization Toolbox]
+  python: [scipy]
+# Only the optimal growth is unique. The flux vector is one of many optima,
+# so the two languages may legitimately return different ones (see toy_fva).
+compare: [growth]
+tolerance: {rtol: 1.0e-6, atol: 1.0e-6}
+expected:
+  growth: 50

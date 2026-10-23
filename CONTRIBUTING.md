@@ -1,0 +1,48 @@
+# Adding an example
+
+1. **Make a folder** `examples/<topic>/<example_name>/` (lower case, underscores).
+
+2. **Write the two scripts**, `<example_name>.py` and `<example_name>.m`. Keep them parallel, so a reader can follow one while looking at the other:
+   * same variable names where the languages allow, same order of steps, same comments;
+   * a short header saying what the example does, and which toolboxes or packages it needs;
+   * the same figure in both: same title, axis labels, legend and colours (blue `#1f77b4`, orange `#ff7f0e`, green `#2ca02c`);
+   * lines of at most 79 characters, so they display without wrapping;
+   * at the end, save the figure(s) with `sbp.save_figure` and the key numbers with `sbp.save_results`, using the **same keys** in both languages.
+
+3. **Write `example.yml`**:
+   ```yaml
+   title: One-line title
+   book: "Ch. 8, §8.7 (Eq. 8.12)"   # where the theory is
+   needs:
+     matlab: [Optimization Toolbox]  # or [] for core MATLAB
+     python: [scipy]
+   compare: [growth, fva100]         # keys that must agree between languages
+   tolerance: {rtol: 1.0e-6, atol: 1.0e-6}
+   expected:                          # values from the book, if any
+     growth: 50
+   ```
+   Only list under `compare:` quantities that are *unique*. For example, an FBA flux vector is usually one of many optima, so different solvers may return different ones; compare the objective value instead. For random examples (random networks, stochastic simulation), compare summary statistics with a suitable tolerance, or read the same input from `data/`.
+
+4. **Run and check**:
+   ```bash
+   python tools/run_examples.py examples/<topic>/<example_name>
+   python tests/compare.py examples/<topic>/<example_name>
+   ```
+   Run the MATLAB script too if you have MATLAB; otherwise the CI run will, and `tools/fetch_ci_outputs.sh matlab` brings its outputs back for you to commit.
+
+5. **Add it to the chapter** with a tab set:
+   ````markdown
+   ::: {.panel-tabset group="language"}
+   ## MATLAB
+   ```{.matlab include="/examples/<topic>/<name>/<name>.m"}
+   ```
+   ![](/examples/<topic>/<name>/out/matlab/fig-<name>.png){width=75%}
+
+   ## Python
+   ```{.python include="/examples/<topic>/<name>/<name>.py"}
+   ```
+   ![](/examples/<topic>/<name>/out/python/fig-<name>.png){width=75%}
+   :::
+   ````
+
+6. **Commit the outputs** (`out/matlab/` and `out/python/`) together with the code, so the website shows the current figures.

@@ -1,0 +1,12 @@
+title: FVA of the toy network
+book: "Ch. 8, §8.7 (Eq. 8.12)"
+needs:
+  matlab: [Optimization Toolbox]
+  python: [scipy]
+compare: [growth, fva100, fva90]
+tolerance: {rtol: 1.0e-6, atol: 1.0e-6}
+expected:
+  growth: 50
+  fva100:
+    min: {v1: 0, v2: 0, v3: 0, v4: 550, v5: 50, v6: 1000, v7: 100, b1: 600, b2: 1000, vbio: 50}
+    max: {v1: 600, v2: 600, v3: 600, v4: 550, v5: 50, v6: 1000, v7: 100, b1: 600, b2: 1000, vbio: 50}

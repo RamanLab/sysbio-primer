@@ -1,0 +1,19 @@
+# Preface {.unnumbered}
+
+This primer is a hands-on companion to *An Introduction to Computational Systems Biology: Systems-Level Modelling of Cellular Networks* (Raman, 2021, CRC Press) and to the course BT5240 at IIT Madras. It can also be read on its own.
+
+Each chapter takes one family of methods, explains the idea in a few paragraphs, and then works through examples. **Every example is given in both MATLAB and Python**, and the two versions produce the same numbers and the same figures. Pick your language in any code tab; the choice carries over to every other tab on the page.
+
+The text is deliberately short. For the theory behind each method, every chapter points to the relevant chapter and section of the book.
+
+## How the examples are checked
+
+Each example is a pair of standalone scripts, one `.m` and one `.py`, in the [`examples/`](https://github.com/RamanLab/sysbio-primer/tree/main/examples) folder of the repository. Every time the primer changes, both versions are run automatically and their key results are compared with each other, and with the values reported in the book where there are any. So the code you see on these pages is the code that was run to produce the figures beside it.
+
+## Licence
+
+The text is available under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) and the code under the [MIT licence](https://opensource.org/licenses/MIT).
+
+## Acknowledgements
+
+*To be added.*

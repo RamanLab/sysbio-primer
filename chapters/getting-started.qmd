@@ -1,0 +1,48 @@
+# Getting started {#sec-getting-started}
+
+You need only one of the two languages to follow this primer. The examples are self-contained scripts that you can run as they are, and then modify.
+
+## Getting the code
+
+Download the repository as a zip file from <https://github.com/RamanLab/sysbio-primer>, or clone it with Git:
+
+```bash
+git clone https://github.com/RamanLab/sysbio-primer.git
+cd sysbio-primer
+```
+
+## Python
+
+Python 3.10 or newer is needed. From the repository folder, create a virtual environment and install the packages the examples use (NumPy, SciPy, Matplotlib, NetworkX and COBRApy), plus a tiny helper package, `sbp`, that the examples use to save their results and figures:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate        # on Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+pip install -e .
+```
+
+Then run any example, for instance:
+
+```bash
+python examples/constraint-based/toy_fba/toy_fba.py
+```
+
+## MATLAB
+
+The examples use core MATLAB (R2021a or newer) and, where noted at the top of a script, standard MathWorks toolboxes such as the Optimization Toolbox. Some constraint-based examples need the [COBRA Toolbox](https://opencobra.github.io/cobratoolbox/); each chapter says so where this applies.
+
+Start MATLAB in the repository folder and run, once per session:
+
+```matlab
+setup_primer      % adds the small +sbp helper package to the path
+```
+
+Then run any example, for instance `run examples/constraint-based/toy_fba/toy_fba.m`.
+
+## What the examples write
+
+Each script prints its main results and writes two kinds of output next to itself, under `out/matlab/` or `out/python/`:
+
+* figures (`fig-*.png`), which are the figures shown in this primer;
+* `results.json`, with the key numbers. These files are what the automated checks compare between the two languages.
