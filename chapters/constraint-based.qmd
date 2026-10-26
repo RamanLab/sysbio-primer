@@ -157,8 +157,3 @@ With glucose uptake capped at 10 mmol/gDW/h, the predicted growth rate is 0.874 
 ## Going further
 
 The next chapter builds on these tools to study how networks respond to perturbations: gene and reaction knock-outs, synthetic lethals and over-expression (book, Chapters 9 and 10).
-
-## References {.unnumbered}
-
-::: {#refs}
-:::

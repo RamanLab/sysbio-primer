@@ -1,0 +1,9 @@
+title: Stiff enzyme kinetics
+book: "Ch. 5, §5.6.1 (Handling stiff equations)"
+needs:
+  matlab: []
+  python: [scipy]
+# The numbers of function evaluations depend on each solver's internals, so
+# they are shown but not compared; only the solutions are.
+compare: [speeds, final_P, t, ES_k100, P_k100]
+tolerance: {rtol: 1.0e-3, atol: 1.0e-5}

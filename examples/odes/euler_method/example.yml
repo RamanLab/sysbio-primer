@@ -1,0 +1,15 @@
+title: Forward and backward Euler
+book: "Ch. 5, §5.5 (Solving ODEs)"
+needs:
+  matlab: []
+  python: [numpy]
+# Euler's method is deterministic arithmetic, so both languages must agree
+# to rounding error.
+compare: [steps, max_error_forward, forward_dt_1_1, backward_dt_1_1]
+tolerance: {rtol: 1.0e-12, atol: 1.0e-12}
+# Closed forms for dx/dt = a - b*x with x(0) = c and n steps of size dt:
+#   forward:  x_n = a/b - (a/b - c) * (1 - b*dt)^n
+#   backward: x_n = a/b - (a/b - c) / (1 + b*dt)^n
+expected:
+  forward_dt_1_1: [5.0, 16.0, 2.8, 18.64, -0.368]
+  backward_dt_1_1: [5.0, 8.4375, 9.51171875, 9.847412109375, 9.95231628418]

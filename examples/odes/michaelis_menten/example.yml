@@ -1,0 +1,8 @@
+title: Mass action vs Michaelis-Menten
+book: "Ch. 5, §5.3 (Modelling enzyme kinetics)"
+needs:
+  matlab: []
+  python: [scipy]
+compare: [low_enzyme, high_enzyme]
+# Both ODE solvers run with RelTol 1e-8, so they agree far better than this
+tolerance: {rtol: 1.0e-5, atol: 1.0e-6}
