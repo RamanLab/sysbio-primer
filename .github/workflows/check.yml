@@ -42,16 +42,7 @@ jobs:
       - name: Run the MATLAB examples
         uses: matlab-actions/run-command@v3
         with:
-          command: |
-            primer = pwd;
-            cd(fullfile(getenv('HOME'), 'cobratoolbox'));
-            initCobraToolbox(false);
-            if ~changeCobraSolver('glpk', 'LP', 0)
-                changeCobraSolver('matlab', 'LP');
-            end
-            cd(primer);
-            addpath('tools');
-            run_examples();
+          command: addpath('tools'); ci_matlab
       - name: Bundle outputs
         if: always()
         run: find examples -type d -path '*/out/matlab' | tar czf out-matlab.tgz -T -
