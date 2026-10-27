@@ -1,14 +1,19 @@
-# Build the website and the PDF from the committed example outputs, and
-# publish them on GitHub Pages. MATLAB is not needed here.
+# Build the website and the PDF, and publish them on GitHub Pages.
+# Runs after the 'check' workflow succeeds on main, and uses the figures and
+# results that run produced in both languages, so the site always shows the
+# output of the code as it now stands. MATLAB is not needed here.
 name: publish
 
 on:
-  push:
+  workflow_run:
+    workflows: [check]
+    types: [completed]
     branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
+  actions: read
   pages: write
   id-token: write
 
@@ -18,9 +23,26 @@ concurrency:
 
 jobs:
   build:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - name: Get the outputs of the check run
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+        run: |
+          if [ -z "$RUN_ID" ]; then
+            RUN_ID=$(gh run list --workflow check.yml --branch main \
+              --status success --limit 1 --json databaseId --jq '.[0].databaseId')
+          fi
+          echo "Using outputs of check run $RUN_ID"
+          for lang in python matlab; do
+            gh run download "$RUN_ID" --name "out-$lang" --dir artifacts
+            tar xzf "artifacts/out-$lang.tgz"
+          done
       - uses: quarto-dev/quarto-actions/setup@v2
         with:
           tinytex: true

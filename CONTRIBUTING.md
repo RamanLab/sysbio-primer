@@ -28,7 +28,7 @@
    python tools/run_examples.py examples/<topic>/<example_name>
    python tests/compare.py examples/<topic>/<example_name>
    ```
-   Run the MATLAB script too if you have MATLAB; otherwise the CI run will, and `tools/fetch_ci_outputs.sh matlab` brings its outputs back for you to commit.
+   Run the MATLAB script too if you have MATLAB; otherwise the CI run will (and `tools/fetch_ci_outputs.sh matlab` brings its outputs into your working copy for previewing).
 
 5. **Add it to the chapter** with a tab set:
    ````markdown
@@ -45,4 +45,4 @@
    :::
    ````
 
-6. **Commit the outputs** (`out/matlab/` and `out/python/`) together with the code, so the website shows the current figures.
+6. **Commit the code, `example.yml` and the chapter text**, but not the `out/` folders: CI regenerates the outputs, checks them, and publishes the site from them.

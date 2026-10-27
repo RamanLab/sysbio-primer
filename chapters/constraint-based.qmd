@@ -126,8 +126,6 @@ Two things to know when reading the code:
 
 *Needs the [COBRA Toolbox](https://opencobra.github.io/cobratoolbox/); run `initCobraToolbox` once per session before this script.*
 
-*One caution: once the COBRA Toolbox is on the MATLAB path, MATLAB's own `linprog` can fail with "Unrecognized field name optimstatus", so the two toy examples above will no longer run in that session. Run them in a fresh MATLAB session, or before `initCobraToolbox`.*
-
 ```{.matlab include="/examples/constraint-based/ecoli_core/ecoli_core.m"}
 ```
 

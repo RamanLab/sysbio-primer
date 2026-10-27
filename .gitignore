@@ -8,3 +8,4 @@ __pycache__/
 /**/*_files/
 
 **/*.quarto_ipynb
+/examples/**/out/
