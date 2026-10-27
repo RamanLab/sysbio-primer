@@ -3,7 +3,9 @@
 % 2. Vary the glucose uptake rate and watch growth respond.
 % Requires: COBRA Toolbox (run initCobraToolbox once per session first).
 
-model = readCbModel(fullfile(sbp.data_dir(), 'e_coli_core.xml'));
+% The .mat file is the same model as the SBML file the Python version reads
+% (made by tools/make_mat_model.py); reading SBML in MATLAB needs libSBML.
+model = readCbModel(fullfile(sbp.data_dir(), 'e_coli_core.mat'));
 fprintf('%d reactions, %d metabolites, %d genes\n', ...
     numel(model.rxns), numel(model.mets), numel(model.genes));
 fprintf('Objective: %s\n', strjoin(model.rxns(model.c ~= 0), ', '));
