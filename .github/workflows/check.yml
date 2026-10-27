@@ -11,8 +11,8 @@ jobs:
   python:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.13"
           cache: pip
@@ -22,8 +22,8 @@ jobs:
       - name: Check Python results against the book
         run: python tests/compare.py
       - name: Bundle outputs
-        run: tar czf out-python.tgz $(find examples -type d -path '*/out/python')
-      - uses: actions/upload-artifact@v4
+        run: find examples -type d -path '*/out/python' | tar czf out-python.tgz -T -
+      - uses: actions/upload-artifact@v7
         with:
           name: out-python
           path: out-python.tgz
@@ -31,8 +31,8 @@ jobs:
   matlab:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: matlab-actions/setup-matlab@v2
+      - uses: actions/checkout@v7
+      - uses: matlab-actions/setup-matlab@v3
         with:
           release: R2025b
           products: Optimization_Toolbox
@@ -40,7 +40,7 @@ jobs:
       - name: Get the COBRA Toolbox
         run: git clone --depth 1 https://github.com/opencobra/cobratoolbox.git "$HOME/cobratoolbox"
       - name: Run the MATLAB examples
-        uses: matlab-actions/run-command@v2
+        uses: matlab-actions/run-command@v3
         with:
           command: |
             primer = pwd;
@@ -54,8 +54,8 @@ jobs:
             run_examples();
       - name: Bundle outputs
         if: always()
-        run: tar czf out-matlab.tgz $(find examples -type d -path '*/out/matlab')
-      - uses: actions/upload-artifact@v4
+        run: find examples -type d -path '*/out/matlab' | tar czf out-matlab.tgz -T -
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: out-matlab
@@ -65,13 +65,20 @@ jobs:
     needs: [python, matlab]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
+        with:
+          name: out-python
+          path: artifacts
+      - uses: actions/download-artifact@v8
+        with:
+          name: out-matlab
+          path: artifacts
       - name: Unpack fresh outputs
         run: |
-          tar xzf out-python/out-python.tgz
-          tar xzf out-matlab/out-matlab.tgz
-      - uses: actions/setup-python@v5
+          tar xzf artifacts/out-python.tgz
+          tar xzf artifacts/out-matlab.tgz
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.13"
       - run: pip install pyyaml
