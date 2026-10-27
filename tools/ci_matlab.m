@@ -1,11 +1,17 @@
 function ci_matlab()
-%CI_MATLAB  What the GitHub Actions MATLAB job runs: set up the COBRA
-%   Toolbox (if it was downloaded to ~/cobratoolbox), then run all examples.
-%   A COBRA Toolbox problem is reported but does not stop the other examples.
+%CI_MATLAB  What the GitHub Actions MATLAB job runs.
+%   Runs the examples that do not need the COBRA Toolbox first, and only
+%   then sets up the COBRA Toolbox (if it was downloaded to ~/cobratoolbox)
+%   and runs the examples that do. Once the COBRA Toolbox is on the path,
+%   MATLAB's own linprog fails ("Unrecognized field name optimstatus"),
+%   so the two groups must not share a session in that order.
 
 primer = fileparts(fileparts(mfilename('fullpath')));
-cobra = fullfile(getenv('HOME'), 'cobratoolbox');
+addpath(fullfile(primer, 'tools'));
 fprintf('MATLAB %s\n', version);
+failed = run_examples([], 'nocobra');
+
+cobra = fullfile(getenv('HOME'), 'cobratoolbox');
 if exist(cobra, 'dir')
     here = pwd;
     try
@@ -16,11 +22,15 @@ if exist(cobra, 'dir')
         end
         fprintf('::notice title=COBRA Toolbox::ready\n');
     catch err
-        msg = strrep(getReport(err, 'extended', 'hyperlinks', 'off'), newline, '%0A');
+        msg = strrep(getReport(err, 'extended', 'hyperlinks', 'off'), ...
+            newline, '%0A');
         fprintf('::error title=COBRA Toolbox setup::%s\n', msg);
     end
     cd(here);
+    failed = [failed, run_examples([], 'cobra')];
 end
-addpath(fullfile(primer, 'tools'));
-run_examples();
+
+if ~isempty(failed)
+    error('ci_matlab:failed', '%d example(s) failed', numel(failed));
+end
 end

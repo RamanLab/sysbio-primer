@@ -1,18 +1,30 @@
-function run_examples(root)
+function failed = run_examples(root, which)
 %RUN_EXAMPLES  Run every MATLAB example under ROOT (default: examples/).
 %   Each example folder holds an example.yml and one <name>.m script.
 %   Examples that need the COBRA Toolbox assume initCobraToolbox has been run.
-%   Errors are collected and reported at the end (non-zero exit in batch mode).
+%   WHICH selects 'all' examples (default), only those that need the COBRA
+%   Toolbox ('cobra'), or only those that do not ('nocobra').
+%   Errors are reported at the end; with no output argument, any failure
+%   raises an error (and so a non-zero exit in batch mode).
 
 primer = fileparts(fileparts(mfilename('fullpath')));
 addpath(fullfile(primer, 'matlab'));
-if nargin < 1
+if nargin < 1 || isempty(root)
     root = fullfile(primer, 'examples');
+end
+if nargin < 2
+    which = 'all';
 end
 
 ymls = dir(fullfile(root, '**', 'example.yml'));
 failed = {};
 for k = 1:numel(ymls)
+    yml = fileread(fullfile(ymls(k).folder, ymls(k).name));
+    needsCobra = contains(yml, 'COBRA Toolbox');
+    if (strcmp(which, 'cobra') && ~needsCobra) || ...
+            (strcmp(which, 'nocobra') && needsCobra)
+        continue
+    end
     scripts = dir(fullfile(ymls(k).folder, '*.m'));
     if numel(scripts) ~= 1
         failed{end+1} = sprintf('%s: expected exactly one .m file', ymls(k).folder); %#ok<AGROW>
@@ -33,7 +45,7 @@ for k = 1:numel(ymls)
     close all
 end
 
-if ~isempty(failed)
+if nargout == 0 && ~isempty(failed)
     error('run_examples:failed', '%d example(s) failed', numel(failed));
 end
 end
